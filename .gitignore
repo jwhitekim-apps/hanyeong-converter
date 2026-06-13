@@ -1,0 +1,6 @@
+# .env file should not be committed to version control
+.env
+
+# Ignore Refresh token file
+refresh-token.json 
+

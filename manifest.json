@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "한영타 변환기",
+  "version": "3.0.0",
+  "description": "드래그한 텍스트를 우클릭 또는 Option+Shift+Z로 한↔영 자판 변환.",
+  "permissions": ["contextMenus", "activeTab", "scripting", "clipboardWrite"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "all_frames": true,
+      "run_at": "document_idle",
+      "js": ["content.js"]
+    }
+  ],
+  "commands": {
+    "convert-typo": {
+      "suggested_key": { "default": "Ctrl+Shift+0", "mac": "Command+Shift+0" },
+      "description": "선택한 텍스트 한영타 변환"
+    }
+  }
+}

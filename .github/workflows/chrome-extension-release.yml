@@ -1,0 +1,49 @@
+```yaml
+name: Chrome Extension Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Zip extension
+        run: |
+          zip -r extension.zip . \
+            -x "*.git*" \
+            -x "node_modules/*"
+
+      - name: Get access token
+        id: token
+        run: |
+          RESPONSE=$(curl -s \
+            -X POST https://oauth2.googleapis.com/token \
+            -d client_id="${{ secrets.GOOGLE_CLIENT_ID }}" \
+            -d client_secret="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+            -d refresh_token="${{ secrets.GOOGLE_REFRESH_TOKEN }}" \
+            -d grant_type="refresh_token")
+
+          ACCESS_TOKEN=$(echo $RESPONSE | jq -r '.access_token')
+
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+
+      - name: Upload extension
+        run: |
+          curl -X PUT \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "x-goog-api-version: 2" \
+            -T extension.zip \
+            "https://www.googleapis.com/upload/chromewebstore/v1.1/items/${{ secrets.CHROME_EXTENSION_ID }}"
+
+      - name: Publish extension
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "x-goog-api-version: 2" \
+            "https://www.googleapis.com/chromewebstore/v1.1/items/${{ secrets.CHROME_EXTENSION_ID }}/publish"
+```
